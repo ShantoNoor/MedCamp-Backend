@@ -3,6 +3,8 @@ import cors from "cors";
 import { config } from "dotenv";
 import mongoose from "mongoose";
 import User from "./models/User.model.js";
+import Camp from "./models/Camp.model.js";
+import Acceptance from "./models/Acceptance.model.js";
 
 config({
   path: ".env.local",
@@ -43,6 +45,41 @@ app.get("/users", async (req, res) => {
   } catch (err) {
     if (err.name === "ValidationError") {
       return res.status(400).send(err.message);
+    } else {
+      return res.status(500).send("Something went wrong");
+    }
+  }
+});
+
+app.get("/professionals", async (req, res) => {
+  try {
+    return res.send(await User.find({ status: "professional" }));
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).send(err.message);
+    } else {
+      return res.status(500).send("Something went wrong");
+    }
+  }
+});
+
+app.post("/add-camp", async (req, res) => {
+  try {
+    const camp = new Camp(req.body);
+    const result = await camp.save();
+    const camp_id = result._id;
+
+    req.body.professionals.forEach(async (item) => {
+      const professional_id = new mongoose.Types.ObjectId(item);
+
+      const acc = new Acceptance({ professional_id, camp_id });
+      await acc.save();
+    });
+
+    return res.status(201).send("Camp added successfully");
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(401).send(err.message);
     } else {
       return res.status(500).send("Something went wrong");
     }

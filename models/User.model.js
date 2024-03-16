@@ -8,7 +8,7 @@ const userSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ["organizer", "participant", "professionals"],
+    enum: ["organizer", "participant", "professional"],
     default: "participant",
     require: true,
   },
