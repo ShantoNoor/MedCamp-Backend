@@ -63,6 +63,30 @@ app.get("/professionals", async (req, res) => {
   }
 });
 
+app.put("/users", async (req, res) => {
+  const data = {};
+  if (req?.body?.name) data.name = req.body.name;
+  if (req?.body?.phone) data.phone = req.body.phone;
+  if (req?.body?.photo) data.photo = req.body.photo;
+  if (req?.body?.address) data.address = req.body.address;
+
+  try {
+    const result = await User.updateOne(
+      { _id: req.body._id },
+      {
+        $set: data,
+      }
+    );
+    return res.status(200).send(result);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).send(err.message);
+    } else {
+      return res.status(500).send("Something went wrong");
+    }
+  }
+});
+
 app.post("/add-camp", async (req, res) => {
   try {
     const camp = new Camp(req.body);
