@@ -20,12 +20,12 @@ const userSchema = new Schema({
   phone: {
     require: false,
     type: String,
-    default: ''
+    default: "",
   },
   photo: {
     require: false,
     type: String,
-    default: ''
+    default: "",
   },
   age: {
     require: true,
@@ -39,7 +39,12 @@ const userSchema = new Schema({
   address: {
     require: false,
     type: String,
-    default: ''
+    default: "",
+  },
+  preferences: {
+    require: false,
+    type: String,
+    default: "",
   },
 });
 

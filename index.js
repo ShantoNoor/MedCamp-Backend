@@ -69,6 +69,7 @@ app.put("/users", async (req, res) => {
   if (req?.body?.phone) data.phone = req.body.phone;
   if (req?.body?.photo) data.photo = req.body.photo;
   if (req?.body?.address) data.address = req.body.address;
+  if (req?.body?.preferences) data.preferences = req.body.preferences;
 
   try {
     const result = await User.updateOne(
@@ -108,6 +109,11 @@ app.post("/add-camp", async (req, res) => {
       return res.status(500).send("Something went wrong");
     }
   }
+});
+
+app.get("/organizer-profile", async (req, res) => {
+  const camps = await Camp.find({ organizer_id: req.query._id });
+  res.status(200).send(camps);
 });
 
 app.listen(port, () => {
