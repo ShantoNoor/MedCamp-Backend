@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import User from "./models/User.model.js";
 import Camp from "./models/Camp.model.js";
 import Acceptance from "./models/Acceptance.model.js";
+import Registration from "./models/Registration.model.js";
 
 config({
   path: ".env.local",
@@ -224,6 +225,20 @@ app.get("/camp-details/:_id", async (req, res) => {
     }
   }
 });
+
+app.post("/register", async (req, res) => {
+  try {
+    const reg = new Registration(req.body);
+    const result = await reg.save();
+    return res.status(201).send(result);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).send(err.message);
+    } else {
+      return res.status(409).send("Already registered!");
+    }
+  }
+})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
