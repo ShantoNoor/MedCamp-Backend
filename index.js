@@ -116,6 +116,25 @@ app.get("/organizer-profile", async (req, res) => {
   res.status(200).send(camps);
 });
 
+app.get("/manage-camps", async (req, res) => {
+  let camps = await Camp.find({ organizer_id: req.query._id });
+  camps = await Promise.all([
+    ...camps.map(async (camp) => {
+      let pros = await Acceptance.find({ camp_id: camp._id });
+      pros = await Promise.all([
+        ...pros.map(async (pro) => {
+          const pro_names = await User.find({ _id: pro.professional_id });
+          return pro_names[0].name;
+        }),
+      ]);
+
+      return { pros, ...camp.toObject() };
+    }),
+  ]);
+  // console.log(camps);
+  res.status(200).send(camps);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });

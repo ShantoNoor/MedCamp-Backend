@@ -23,7 +23,7 @@ const campSchema = new Schema(
     photo: {
       require: false,
       type: String,
-      default: ''
+      default: "",
     },
     fees: {
       type: Number,
@@ -47,6 +47,10 @@ const campSchema = new Schema(
       enum: ["upcoming", "publish", "complete"],
       default: "publish",
       require: true,
+    },
+    target_audience: {
+      type: String,
+      default: "",
     },
   },
   {
