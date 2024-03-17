@@ -62,6 +62,12 @@ const registrationSchema = new Schema(
       default: "unpaid",
       require: true,
     },
+    confirmation_status: {
+      type: String,
+      enum: ["pending", "confirmed"],
+      default: "pending",
+      require: true,
+    },
     rating: {
       type: Number,
       default: 0,

@@ -186,9 +186,12 @@ app.get("/available-camps", async (req, res) => {
           }),
         ]);
 
-        return { pros, ...camp.toObject() };
+        const count = await Registration.countDocuments({ camp_id: camp._id });
+
+        return { pros, count, ...camp.toObject() };
       }),
     ]);
+
     return res.status(200).send(camps);
   } catch (err) {
     if (err.name === "ValidationError") {
@@ -238,7 +241,49 @@ app.post("/register", async (req, res) => {
       return res.status(409).send("Already registered!");
     }
   }
-})
+});
+
+app.get("/registered-camps", async (req, res) => {
+  const user_id = req.query._id;
+  let registrations = await Registration.find({ user_id: user_id });
+  registrations = await Promise.all([
+    ...registrations.map(async (reg) => {
+      let camp = await Camp.find({ _id: reg.camp_id });
+      return {
+        ...reg.toObject(),
+        camp_name: camp[0].name,
+        camp_date_and_time: camp[0].date_and_time,
+        camp_venue: camp[0].venue,
+      };
+    }),
+  ]);
+  return res.status(200).send(registrations);
+});
+
+app.put("/update-payment", async (req, res) => {
+  const { _id, payment_status } = req.body;
+  const result = await Registration.updateOne(
+    { _id: _id },
+    {
+      $set: { payment_status },
+    }
+  );
+  return res.status(200).send(result);
+});
+
+app.delete("/cancel-registrasion/:_id", async (req, res) => {
+  const { _id } = req.params;
+  try {
+    const result = await Registration.deleteOne({ _id: _id });
+    return res.status(200).send(result);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).send(err.message);
+    } else {
+      return res.status(500).send("Something went wrong");
+    }
+  }
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
