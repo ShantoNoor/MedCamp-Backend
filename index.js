@@ -149,6 +149,29 @@ app.put("/update-camp", async (req, res) => {
   }
 });
 
+app.delete("/delete-camp/:_id", async (req, res) => {
+  const { _id } = req.params;
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+    await Acceptance.deleteMany({ camp_id: _id });
+    const result = await Camp.deleteOne({ _id: _id });
+    await session.commitTransaction();
+    return res.status(200).send(result);
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+
+    if (err.name === "ValidationError") {
+      return res.status(400).send(err.message);
+    } else {
+      return res.status(500).send("Something went wrong");
+    }
+  }
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
