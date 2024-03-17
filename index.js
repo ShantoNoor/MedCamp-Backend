@@ -172,6 +172,59 @@ app.delete("/delete-camp/:_id", async (req, res) => {
   }
 });
 
+app.get("/available-camps", async (req, res) => {
+  try {
+    let camps = await Camp.find({ status: "publish" });
+    camps = await Promise.all([
+      ...camps.map(async (camp) => {
+        let pros = await Acceptance.find({ camp_id: camp._id });
+        pros = await Promise.all([
+          ...pros.map(async (pro) => {
+            const pro_names = await User.find({ _id: pro.professional_id });
+            return pro_names[0].name;
+          }),
+        ]);
+
+        return { pros, ...camp.toObject() };
+      }),
+    ]);
+    return res.status(200).send(camps);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).send(err.message);
+    } else {
+      return res.status(500).send("Something went wrong");
+    }
+  }
+});
+
+app.get("/camp-details/:_id", async (req, res) => {
+  const { _id } = req.params;
+  try {
+    let camps = await Camp.find({ _id: _id });
+    camps = await Promise.all([
+      ...camps.map(async (camp) => {
+        let pros = await Acceptance.find({ camp_id: camp._id });
+        pros = await Promise.all([
+          ...pros.map(async (pro) => {
+            const pro_names = await User.find({ _id: pro.professional_id });
+            return pro_names[0].name;
+          }),
+        ]);
+
+        return { pros, ...camp.toObject() };
+      }),
+    ]);
+    return res.status(200).send(camps);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).send(err.message);
+    } else {
+      return res.status(500).send("Something went wrong");
+    }
+  }
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
