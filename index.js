@@ -135,6 +135,20 @@ app.get("/manage-camps", async (req, res) => {
   res.status(200).send(camps);
 });
 
+app.put("/update-camp", async (req, res) => {
+  const { _id, ...rest } = req.body;
+  try {
+    const result = await Camp.updateOne({ _id: _id }, { $set: { ...rest } });
+    return res.status(200).send(result);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).send(err.message);
+    } else {
+      return res.status(500).send("Something went wrong");
+    }
+  }
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
