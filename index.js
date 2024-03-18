@@ -280,7 +280,12 @@ app.post("/create-payment-intent", async (req, res) => {
   }
 });
 
-app.put("/update-payment", async (req, res) => {
+app.get("/registrations", async (req, res) => {
+  const registrations = await Registration.find(req.query);
+  return res.status(200).send(registrations);
+});
+
+app.put("/registrations", async (req, res) => {
   const { _id, ...rest } = req.body;
   const result = await Registration.updateOne(
     { _id: _id },
@@ -291,7 +296,7 @@ app.put("/update-payment", async (req, res) => {
   return res.status(200).send(result);
 });
 
-app.delete("/cancel-registrasion/:_id", async (req, res) => {
+app.delete("/registrations/:_id", async (req, res) => {
   const { _id } = req.params;
   try {
     const result = await Registration.deleteOne({ _id: _id });
@@ -303,23 +308,6 @@ app.delete("/cancel-registrasion/:_id", async (req, res) => {
       return res.status(500).send("Something went wrong");
     }
   }
-});
-
-app.get("/manage-registered-camps", async (req, res) => {
-  const user_id = req.query._id;
-  let registrations = await Registration.find({ _id: user_id });
-  registrations = await Promise.all([
-    ...registrations.map(async (reg) => {
-      let camp = await Camp.find({ _id: reg.camp_id });
-      return {
-        ...reg.toObject(),
-        camp_name: camp[0].name,
-        camp_date_and_time: camp[0].date_and_time,
-        camp_venue: camp[0].venue,
-      };
-    }),
-  ]);
-  return res.status(200).send(registrations);
 });
 
 app.listen(port, () => {
