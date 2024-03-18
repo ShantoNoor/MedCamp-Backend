@@ -13,7 +13,16 @@ const registrationSchema = new Schema(
       ref: "Camp",
       require: true,
     },
+    organizer_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      require: true,
+    },
     name: {
+      type: String,
+      require: true,
+    },
+    camp_name: {
       type: String,
       require: true,
     },
@@ -36,7 +45,7 @@ const registrationSchema = new Schema(
       enum: ["male", "female"],
       require: true,
     },
-    fees: {
+    camp_fees: {
       type: Number,
       min: 1,
       require: true,
@@ -77,6 +86,14 @@ const registrationSchema = new Schema(
       default: "",
     },
     review_photos: {
+      type: String,
+      default: "",
+    },
+    camp_date_and_time: {
+      type: Date,
+      require: true,
+    },
+    camp_venue: {
       type: String,
       default: "",
     },
