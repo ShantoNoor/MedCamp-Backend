@@ -12,6 +12,9 @@ config({
 });
 
 const app = express();
+import Stripe from "stripe";
+// eslint-disable-next-line no-undef
+const stripe = new Stripe(process.env.apiKey_stripe);
 
 // eslint-disable-next-line no-undef
 const port = process.env.port || 3000;
@@ -260,12 +263,29 @@ app.get("/registered-camps", async (req, res) => {
   return res.status(200).send(registrations);
 });
 
+app.post("/create-payment-intent", async (req, res) => {
+  try {
+    const { fees } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: fees * 100,
+      currency: "usd", // Or your desired currency
+      payment_method_types: ["card"],
+    });
+
+    res.status(200).send({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: "Failed to create payment intent" });
+  }
+});
+
 app.put("/update-payment", async (req, res) => {
-  const { _id, payment_status } = req.body;
+  const { _id, ...rest } = req.body;
   const result = await Registration.updateOne(
     { _id: _id },
     {
-      $set: { payment_status },
+      $set: { ...rest },
     }
   );
   return res.status(200).send(result);

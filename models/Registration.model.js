@@ -97,6 +97,10 @@ const registrationSchema = new Schema(
       type: String,
       default: "",
     },
+    txid: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
