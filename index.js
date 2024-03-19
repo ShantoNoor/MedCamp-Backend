@@ -186,8 +186,6 @@ app.get("/available-camps", async (req, res) => {
 
         const count = await Registration.countDocuments({
           camp_id: camp._id,
-          payment_status: "paid",
-          confirmation_status: "confirmed",
         });
 
         return { pros, count, ...camp.toObject() };
@@ -301,7 +299,7 @@ app.get("/registrations", async (req, res) => {
       newReg.camp_venue = camp.venue;
       newReg.camp_status = camp.status;
 
-      newReg.organizer_name = organizer.name
+      newReg.organizer_name = organizer.name;
 
       return newReg;
     }),
@@ -333,6 +331,52 @@ app.delete("/registrations/:_id", async (req, res) => {
       return res.status(500).send("Something went wrong");
     }
   }
+});
+
+app.get("/home", async (req, res) => {
+  let imgs = await Camp.aggregate([
+    { $match: { photo: { $ne: "" } } },
+    { $sample: { size: 4 } },
+    { $project: { _id: 0, photo: 1 } },
+  ]);
+  imgs = imgs.map((camp) => camp.photo);
+
+  let camps = await Camp.find();
+  camps = await Promise.all([
+    ...camps.map(async (camp) => {
+      let pros = await Acceptance.find({ camp_id: camp._id });
+      pros = await Promise.all([
+        ...pros.map(async (pro) => {
+          const pro_names = await User.find({ _id: pro.professional_id });
+          return pro_names[0].name;
+        }),
+      ]);
+      const count = await Registration.countDocuments({
+        camp_id: camp._id,
+      });
+      return { pros, count, ...camp.toObject() };
+    }),
+  ]);
+
+  camps.sort((a, b) => b.count - a.count);
+  camps = camps.slice(0, 6);
+
+  const letest_reviews = await Registration.aggregate([
+    {
+      $match: {
+        rating: { $ne: 0 },
+        review: { $ne: "" },
+      },
+    },
+    { $sort: { updatedAt: -1 } },
+    { $limit: 4 },
+  ]);
+
+  const totalUsers = await User.countDocuments();
+  const totalCamps = await Camp.countDocuments();
+  const totalRegistrations = await Registration.countDocuments();
+
+  res.status(200).json({ imgs, camps, letest_reviews, totalUsers, totalCamps, totalRegistrations });
 });
 
 app.listen(port, () => {
