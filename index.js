@@ -376,7 +376,74 @@ app.get("/home", async (req, res) => {
   const totalCamps = await Camp.countDocuments();
   const totalRegistrations = await Registration.countDocuments();
 
-  res.status(200).json({ imgs, camps, letest_reviews, totalUsers, totalCamps, totalRegistrations });
+  const organizerPipeline = [
+    {
+      $group: {
+        _id: "$organizer_id",
+        totalRegistrations: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { totalRegistrations: -1 },
+    },
+    {
+      $lookup: {
+        from: "users", // Assuming your user collection name is "users"
+        localField: "_id",
+        foreignField: "_id",
+        as: "organizer",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        totalRegistrations: 1,
+        organizerName: { $arrayElemAt: ["$organizer.name", 0] },
+      },
+    },
+  ];
+
+  const topOrganizers = await Registration.aggregate(organizerPipeline);
+
+  const participantPipeline = [
+    {
+      $group: {
+        _id: "$user_id",
+        totalRegistrations: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { totalRegistrations: -1 },
+    },
+    {
+      $lookup: {
+        from: "users", // Assuming your user collection name is "users"
+        localField: "_id",
+        foreignField: "_id",
+        as: "participant",
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        totalRegistrations: 1,
+        participantName: { $arrayElemAt: ["$participant.name", 0] },
+      },
+    },
+  ];
+
+  const topParticipants = await Registration.aggregate(participantPipeline);
+
+  res.status(200).json({
+    imgs,
+    camps,
+    letest_reviews,
+    totalUsers,
+    totalCamps,
+    totalRegistrations,
+    topParticipants,
+    topOrganizers,
+  });
 });
 
 app.listen(port, () => {
