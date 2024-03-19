@@ -115,13 +115,8 @@ app.post("/add-a-camp", async (req, res) => {
   }
 });
 
-app.get("/organizer-profile", async (req, res) => {
-  const camps = await Camp.find({ organizer_id: req.query._id });
-  res.status(200).send(camps);
-});
-
 app.get("/manage-camps", async (req, res) => {
-  let camps = await Camp.find({ organizer_id: req.query._id });
+  let camps = await Camp.find(req.query);
   camps = await Promise.all([
     ...camps.map(async (camp) => {
       let pros = await Acceptance.find({ camp_id: camp._id });
