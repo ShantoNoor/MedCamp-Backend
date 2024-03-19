@@ -92,7 +92,7 @@ app.put("/users", async (req, res) => {
   }
 });
 
-app.post("/add-camp", async (req, res) => {
+app.post("/add-a-camp", async (req, res) => {
   try {
     const camp = new Camp(req.body);
     const result = await camp.save();
@@ -189,7 +189,11 @@ app.get("/available-camps", async (req, res) => {
           }),
         ]);
 
-        const count = await Registration.countDocuments({ camp_id: camp._id });
+        const count = await Registration.countDocuments({
+          camp_id: camp._id,
+          payment_status: "paid",
+          confirmation_status: "confirmed",
+        });
 
         return { pros, count, ...camp.toObject() };
       }),
@@ -313,4 +317,3 @@ app.delete("/registrations/:_id", async (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
