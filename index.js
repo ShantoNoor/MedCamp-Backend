@@ -288,16 +288,20 @@ app.get("/registrations", async (req, res) => {
 
       const camp = (await Camp.find({ _id: newReg.camp_id }))[0];
       const user = (await User.find({ _id: newReg.user_id }))[0];
+      const organizer = (await User.find({ _id: newReg.organizer_id }))[0];
 
       // update userInfo
       newReg.name = user.name;
       newReg.phone = user.phone;
       newReg.address = user.address;
+      newReg.photo = user.photo;
 
       // update campInfo
       newReg.camp_name = camp.name;
       newReg.camp_venue = camp.venue;
       newReg.camp_status = camp.status;
+
+      newReg.organizer_name = organizer.name
 
       return newReg;
     }),
