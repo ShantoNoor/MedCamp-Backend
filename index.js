@@ -285,7 +285,29 @@ app.post("/create-payment-intent", async (req, res) => {
 });
 
 app.get("/registrations", async (req, res) => {
-  const registrations = await Registration.find(req.query);
+  let registrations = await Registration.find(req.query);
+
+  registrations = await Promise.all([
+    ...registrations.map(async (reg) => {
+      const newReg = { ...reg.toObject() };
+
+      const camp = (await Camp.find({ _id: newReg.camp_id }))[0];
+      const user = (await User.find({ _id: newReg.user_id }))[0];
+
+      // update userInfo
+      newReg.name = user.name;
+      newReg.phone = user.phone;
+      newReg.address = user.address;
+
+      // update campInfo
+      newReg.camp_name = camp.name;
+      newReg.camp_venue = camp.venue;
+      newReg.camp_status = camp.status;
+
+      return newReg;
+    }),
+  ]);
+
   return res.status(200).send(registrations);
 });
 
